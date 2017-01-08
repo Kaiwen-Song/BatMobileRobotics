@@ -1,0 +1,156 @@
+import brickpi
+import time
+
+from config import *
+
+def setupRobot():
+    # Setup Brick Pi
+    interface = brickpi.Interface()
+    interface.initialize()
+    motors = [2,3]
+    speed = 2
+
+    # Enable the motors and fetch the MotorParams holders
+    interface.motorEnable(motors[0])
+    interface.motorEnable(motors[1])
+    motorParams = []
+    motorParams.append(interface.MotorAngleControllerParameters())
+    motorParams.append(interface.MotorAngleControllerParameters())
+
+    # Setup the params for the motors that are equals
+    motorParams[0].maxRotationAcceleration = motorParams[1].maxRotationAcceleration = 6.0
+    motorParams[0].maxRotationSpeed = motorParams[1].maxRotationSpeed = 10.0
+    motorParams[0].pidParameters.minOutput = motorParams[1].pidParameters.minOutput = -255
+    motorParams[0].pidParameters.maxOutput = motorParams[1].pidParameters.maxOutput = 255
+
+    # Setup the params for the motors that differ using our optimal values
+    motorParams[0].pidParameters.k_p = KP0
+    motorParams[0].pidParameters.k_i = KI0
+    motorParams[0].pidParameters.k_d = KD0
+    motorParams[0].feedForwardGain = FFG0
+    motorParams[0].minPWM = PWM0
+
+    motorParams[1].pidParameters.k_p = KP1
+    motorParams[1].pidParameters.k_i = KI1
+    motorParams[1].pidParameters.k_d = KD1
+    motorParams[1].feedForwardGain = FFG1
+    motorParams[1].minPWM = PWM1
+
+    interface.setMotorAngleControllerParameters(motors[0], motorParams[0])
+    interface.setMotorAngleControllerParameters(motors[1], motorParams[1])
+    #interface.setMotorAngleReferences(motors, [0,0])
+
+    return (motors, interface)
+
+# Best values found for 40cm and 90 degrees rotation clockwise
+best40cmValue = 11.5;
+best90degreesValue = 4.39;
+
+def moveForward(motors, interface):
+    # Get CM to move foward
+    distanceToMove = float(input("Please enter a distance in cm to move foward in\n"))
+    moveForwardcm(distanceToMove, motors, interface)
+    return
+
+def rotateClockwise(motors, interface):
+    # Get degress to rotate clockwise
+    degreesToMove = float(input("Please enter a degrees to turn clockwise in\n"))
+    rotateDegrees(degreesToMove, motors, interface)
+    return
+
+def drawSquare(motors, interface):
+    # Get number of times to draw the suqare
+    numberOfSquares = int(input("Please enter the number of squares to draw\n"))
+    for i in range(0, numberOfSquares):
+        drawSingleSquare(motors, interface)
+    return
+
+def testMovement(motors, interface):
+    # Go forwards 40cm and then backwards 40cm
+    moveForwardcm(40, motors, interface)
+    time.sleep(0.5)
+    moveForwardcm(-40, motors, interface)
+    return
+
+def testRotation(motors, interface):
+    # Rotate 90 degrees clockwise then anitclockwise
+    rotateDegrees(90, motors, interface)
+    time.sleep(0.5)
+    rotateDegrees(-90, motors, interface)
+    return
+
+def drawSingleSquare(motors, interface):
+    # Draws a 40cm square
+    moveForwardcm(40, motors, interface)
+    rotateDegrees(90, motors, interface)
+    moveForwardcm(40, motors, interface)
+    rotateDegrees(90, motors, interface)
+    moveForwardcm(40, motors, interface)
+    rotateDegrees(90, motors, interface)
+    moveForwardcm(40, motors, interface)
+    rotateDegrees(90, motors, interface)
+    return
+
+# Angle in degrees you want the robots to rotate clockwise
+def rotateDegrees(angle, motors, interface):
+    radianValue = angle * (best90degreesValue/90)
+    rotateExplicitly(radianValue, motors, interface)
+    return
+
+# Rotate the robot using radians values explicity
+def rotateExplicitly(radian, motors, interface):
+    interface.increaseMotorAngleReferences(motors,[radian,-radian])
+    checkIfReached(motors, interface)
+    return
+
+# Move the robot n cm forward
+def moveForwardcm(distance, motors, interface):
+    radianValue = distance * (best40cmValue/40)
+    moveForwardExplicitly(radianValue, motors, interface)
+    return
+
+# Move the robot forward using the radian vlaues explicity
+def moveForwardExplicitly(radian, motors, interface):
+    interface.increaseMotorAngleReferences(motors, [radian, radian])
+    checkIfReached(motors, interface)
+    return
+
+# Method that waits for the motors to reach the angles before continuing
+def checkIfReached(motors, interface):
+    while not interface.motorAngleReferencesReached(motors) :
+      motorAngles = interface.getMotorAngles(motors)
+      if motorAngles:
+	dummy = 0
+    return
+
+
+# This file will provide the support for performing 3 different actions:
+# 1. Move the robot forward a distance of n
+# 2. Rotate the robot m degrees in a clockwise fashio
+# 3. Draw a square
+
+# The following "map" allows us to choose which function to run in the
+# main method called
+actions = [["1. Move forward n amounts in cm (Negative cm to move backwards)", moveForward], 
+		["2. Rotate clockwise in place by n degrees (Negative degreees to move anticlockwise)", rotateClockwise],
+		["3. Draw n number of squares with 40cm long sides", drawSquare],
+		["4. Move forward with length of 40cm and backwards with length of 40cm", testMovement],
+		["5. Rotate 90 degrees clockwise and then rotate 90 degrees anticlockwise", testRotation]]
+
+# Define the methods that will be called when the file is passed to the
+# Python interpreter
+if __name__ == '__main__':
+
+    # Get Motors and Interface
+    (motors, interface) = setupRobot()
+
+    # Wait for input of the right method, and call the method to process the
+    # request
+    while True:
+	for action in actions:
+		print(action[0])
+
+	print("-----------------------------------------------------------------------------------")
+        inputCode = int(input("Press a number between 1 and 5 for the desired action \n"))
+        actions[inputCode-1][1](motors, interface)
+	print("-----------------------------------------------------------------------------------")

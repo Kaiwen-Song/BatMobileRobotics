@@ -1,0 +1,49 @@
+import brickpi
+import math
+from random import gauss
+import movementlib
+
+NUMBER_OF_PARTICLES = 100
+PARTICLES = []
+#std deviations of each noise term
+E = 10
+F = 10
+G = 10
+
+class Particle:
+    def __init__(self, x, y, theta):
+        self.x = x
+        self.y = y
+        self.theta = theta
+    def __update(self, new_x,new_y,new_theta):
+        self.x = new_x
+        self.y = new_y
+        self.theta = new_theta
+    def toTriple(self):
+        return (self.x, self.y, self.theta)
+    def updateParticleStraight(self,D,e,f):
+        t = self.theta
+        self.__update(particle.x+(D+e)*math.cos(t), particle.y+(D+e)*math.sin(t), t+f)
+    def updateParticleRotate(self, a, g):
+        self.__update(particle.x, particle.y, particle.theta+a+g)
+
+
+def particleWeight(particle):
+    return 1/NUMBER_OF_PARTICLES
+def drawParticles():
+    #magically draws particles in the web interface...
+    print "drawParticles:" + str(map(lambda p: p.toTriple(), PARTICLES))
+def initialiseParticles():
+    for i in range(0, NUMBER_OF_PARTICLES):
+        PARTICLES.append(Particle(0,0,0))
+def updateAllParticlesStraight(distance):
+    for particle in PARTICLES:
+        particle.updateParticleStraight(distance, gauss(0, E), gauss(0, F))
+def updateAllParticlesRotate(alpha):
+    for particle in PARTICLES:
+        particle.updateParticleRotate(alpha, gauss(0, G))
+
+initialiseParticles()
+for i in range(10):
+    updateAllParticlesStraight(10)
+    drawParticles()

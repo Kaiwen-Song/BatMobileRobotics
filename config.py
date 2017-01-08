@@ -1,0 +1,49 @@
+#robot wheel motor parameters
+KP0 = 400.0/2 #400
+KP1 = 500.0/2 #500
+KI0 = 300.0*0.85
+KI1 = 350.0*0.85
+KD0 = 420.0/1.5 #400/1.5
+KD1 = 475.0/1.5 #500/1.5
+
+FFG0 = 255.0/20
+FFG1 = 255.0/20
+#left
+PWM0 = 42.0
+#right
+PWM1 = 42.0
+
+WHEEL_MOTORS = [2,3]
+
+#robot sensor and related motor parameters
+KP_SENSOR_MOTOR = 250.0 #250
+KI_SENSOR_MOTOR = 120.0
+KD_SENSOR_MOTOR = 400.0
+FFG_SENSOR_MOTOR = 255.0/20
+PWM_SENSOR_MOTOR = 30.0
+
+SENSOR_MOTOR = [1]
+TOUCH_SENSOR = [3,0]
+SONAR_SENSOR = [1]
+
+#Motor values
+FORWARD_40_CM_VALUE = 11.8
+ROTATE_90_DEGREES_VALUE = 4.37
+
+LOCATIONS = [(84,30), (180,30), (180,54), (138,54), (138,168)]
+
+SONAR_360_VAL = 57.75
+
+SIG_LENGTH = 180
+#default values
+# KP0 = 100
+# KP1 = 100
+# KI0 = 0
+# KI1 = 0
+# KD0 = 0
+# KD1 = 0
+
+# FFG0 = 255/20
+# FFG1 = 255/20
+# PWM0 = 30
+# PWM1 = 30
